@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const NO_CLUSTERS_FOUND = "No clusters found"
+
 func fetchClusterList() []string {
 	cmd := exec.Command("kwokctl", "get", "clusters")
 	data, err := cmd.Output()
@@ -14,6 +16,9 @@ func fetchClusterList() []string {
 	}
 
 	allClusters := string(data)
+	if allClusters == NO_CLUSTERS_FOUND {
+		return []string{}
+	}
 	clusters := strings.Split(allClusters, "\n")
 	return clusters
 }
@@ -29,6 +34,9 @@ func removeCluster(name string) {
 func main() {
 	clusterList := fetchClusterList()
 	for _, c := range clusterList {
+		if len(c) == 0 {
+			continue
+		}
 		fmt.Println("Deleting cluster ", c)
 		removeCluster(c)
 	}
