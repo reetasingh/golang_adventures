@@ -37,7 +37,7 @@ func chat() {
 }
 
 func imageGeneration() {
-	data, err := os.ReadFile("api.key")
+	data, err := os.ReadFile("/Users/reeta/secrets/chatgpt-api.key")
 	client := openai.NewClient(string(data))
 	// reqUrl := openai.ImageRequest{
 	// 	Prompt:         "Golang gopher cartoon for medium article sitting on a laptop and writing unit tests in english language",
