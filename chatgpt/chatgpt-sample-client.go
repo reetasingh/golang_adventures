@@ -65,6 +65,7 @@ func imageGeneration() {
 	}
 	respUrl, err := client.CreateEditImage(context.Background(), reqUrl)
 	if err != nil {
+		// failing as need to buy credit for this
 		panic(err)
 	}
 	fmt.Println(respUrl.Data[0].URL)
