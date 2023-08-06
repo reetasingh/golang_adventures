@@ -1,21 +1,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"reflect"
 )
 
-type ChildStruct struct {
-	Field3 int `json:"field3,omitempty"`
+type MyStruct struct {
 }
 
-// SourceStruct represents the source struct
-type SourceStruct struct {
-	Field1 int    `json:"field1,omitempty"`
-	Field2 string `json:"field2,omitempty"`
-	Child  ChildStruct
-	// Add other fields as needed
-}
+var (
+	typeNames = flag.String("type", "", "comma-separated list of type names; must be set")
+)
 
 func processTag(tag reflect.StructTag) {
 	val := tag.Get("json")
@@ -52,6 +48,18 @@ func CreateDynamicStruct(sourceType reflect.Type, structName string) reflect.Typ
 
 	newStructType := reflect.StructOf(fieldTypes)
 	return newStructType
+}
+
+type ChildStruct struct {
+	Field3 int `json:"field3,omitempty"`
+}
+
+// SourceStruct represents the source struct
+type SourceStruct struct {
+	Field1 int    `json:"field1,omitempty"`
+	Field2 string `json:"field2,omitempty"`
+	Child  ChildStruct
+	// Add other fields as needed
 }
 
 func main() {
