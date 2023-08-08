@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
+	"log"
+	"os"
 	"reflect"
 )
 
@@ -58,13 +62,20 @@ type ChildStruct struct {
 type SourceStruct struct {
 	Field1 int    `json:"field1,omitempty"`
 	Field2 string `json:"field2,omitempty"`
-	Child  ChildStruct
+	//Child  ChildStruct
 	// Add other fields as needed
 }
+type Generator struct {
+	buf bytes.Buffer // Accumulated output.
+}
 
-func main() {
+func (g *Generator) Printf(format string, args ...interface{}) {
+	fmt.Fprintf(&g.buf, format, args...)
+}
+
+func (g *Generator) generate(i any) (reflect.Type, reflect.Value) {
 	// Get the reflect.Type of SourceStruct
-	sourceType := reflect.TypeOf(SourceStruct{})
+	sourceType := reflect.TypeOf(i)
 
 	// Dynamically create a new struct type based on the fields of SourceStruct
 	newStructType := CreateDynamicStruct(sourceType, "DynamicStruct")
@@ -72,6 +83,39 @@ func main() {
 	// Create an instance of the dynamically created struct type
 	newStructValue := reflect.New(newStructType).Elem()
 
+	return newStructType, newStructValue
+}
+
+func (g *Generator) format() []byte {
+	src, err := format.Source(g.buf.Bytes())
+	if err != nil {
+		// Should never happen, but can arise when developing this code.
+		// The user can compile the output to see the error.
+		log.Printf("warning: internal error: invalid Go generated: %s", err)
+		log.Printf("warning: compile the package to analyze the error")
+		return g.buf.Bytes()
+	}
+	return src
+}
+
+func main() {
+	g := Generator{}
+	newStructType, newStructValue := g.generate(SourceStruct{})
 	// Print the type of the dynamically created struct
 	fmt.Printf("Type: %T\nValue: %+v\n", newStructValue.Interface(), newStructValue.Interface())
+	g.Printf(`package dbstruct`)
+	g.Printf("\n")
+	g.Printf(`type DynamicStruct struct { `)
+	for i := 0; i < newStructType.NumField(); i++ {
+		field := newStructType.Field(i)
+		g.Printf("\n")
+		g.Printf(" %s %s `%s`", field.Name, field.Type, field.Tag)
+	}
+	g.Printf("\n")
+	g.Printf("}")
+	src := g.format()
+	err := os.WriteFile("dbstruct_models.go", src, 0644)
+	if err != nil {
+		log.Fatalf("writing output: %s", err)
+	}
 }
