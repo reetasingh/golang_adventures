@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 )
 
 type Myint int
@@ -31,7 +34,51 @@ func analyze[T any](elem T) {
 	}
 }
 
+func ParseEnvFile(filePath string) ([]string, error) {
+	var output []string
+
+	if filePath == "" {
+		return output, nil
+	}
+
+	fullPath, err := filepath.Abs(filePath)
+	if err != nil {
+		return output, err
+	}
+	_, err = os.Stat(fullPath)
+	if err != nil {
+		return output, err
+	}
+
+	fileData, err := os.ReadFile(fullPath)
+	if err != nil {
+		return output, err
+	}
+
+	if len(fileData) == 0 {
+		return output, nil
+	}
+
+	lines := strings.Split(string(fileData), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if len(line) > 0 {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				output = append(output, line)
+			}
+		}
+	}
+	return output, nil
+}
+
 func main() {
-	example := Example{10, 21.1, []string{"demo", "value"}, 20}
-	analyze(example)
+	//example := Example{10, 21.1, []string{"demo", "value"}, 20}
+	//analyze(example)
+	result, err := ParseEnvFile("reflect/abc.env")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result)
+
 }
