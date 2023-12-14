@@ -59,5 +59,5 @@ func main() {
 	programLevel.Set(slog.LevelDebug)
 	// change the logging level
 	logger.Debug("this is debug message2")
-	// this will now be logged
+	// this debug msg will now be logged
 }
