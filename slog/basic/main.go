@@ -57,6 +57,7 @@ func main() {
 	logger.Debug("this is debug message1")
 	// this not be logged since level is not debug
 	programLevel.Set(slog.LevelDebug)
+	// change the logging level
 	logger.Debug("this is debug message2")
 	// this will now be logged
 }
