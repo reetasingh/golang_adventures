@@ -1,2 +1,4 @@
 chatgpt/api.key
 gdoc/document-id.txt
+.DS_Store
+*/.DS_Store
