@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var randomErr = errors.New("random error")
+var NotFoundErr = errors.New("key not found")
 
 func main() {
 	// this debug msg will now be logged
@@ -19,16 +19,33 @@ func main() {
 			fmt.Println("Error is not of type *MyError")
 		}
 	}
+	// check error type using interface type check
+	if err != nil {
+		err = &MyError{"test"}
+		if myErr, ok := err.(*MyError); ok {
+			fmt.Printf("Is Unwrapped Error: %v\n", myErr.Message)
+		} else {
+			fmt.Printf("Not is Unwrapped Error: %v\n", err)
+		}
+	}
+
+	// unwrap errors till the end
+	lastErr := getLastError(err)
+	fmt.Printf("\nunwrapped last error %v\n", lastErr)
 
 	// example of using errors.Is for checking error
-	err = randomErrorFunction()
+	err = dbErrorFunction()
 	if err != nil {
-		if errors.Is(err, randomErr) {
+		if errors.Is(err, NotFoundErr) {
 			fmt.Printf("error matches %v", err)
 		} else {
 			fmt.Printf("error does not matches")
 		}
 	}
+	// unwrap errors till the end
+	lastErr = getLastError(err)
+	fmt.Printf("\nunwrapped last error %v", lastErr)
+
 }
 
 type MyError struct {
@@ -53,8 +70,18 @@ func someOtherFunction() error {
 	return &MyError{Message: "this is db error"}
 }
 
-func randomErrorFunction() error {
+func dbErrorFunction() error {
 	//return fmt.Errorf("random error")
 	//return randomErr
-	return fmt.Errorf("random error chain %w", randomErr)
+	return fmt.Errorf("error chain %w", NotFoundErr)
+}
+
+// unwrap errors till the last error
+func getLastError(err error) error {
+	newErr := errors.Unwrap(err)
+	if newErr == nil {
+		return err
+	} else {
+		return getLastError(newErr)
+	}
 }
