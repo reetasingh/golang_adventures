@@ -37,7 +37,5 @@ func main() {
 		go consume(i)
 		wg.Add(1)
 	}
-
 	wg.Wait()
-
 }
